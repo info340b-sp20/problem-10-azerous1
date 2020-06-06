@@ -15,13 +15,12 @@ export default class ChirpList extends Component {
   }
 
   componentDidMount() {
-    let chirpsRef = firebase.database().ref('chirps');
-    chirpsRef.on('value', (snapshot) => {
+     this.chirpsRef = firebase.database().ref('chirps');
+    this.chirpsRef.on('value', (snapshot) => {
       let tweet = snapshot.val();
-      console.log(tweet);
-      this.setState(
-        this.state.chirps.push(tweet)
-      )
+      this.setState({
+        chirps: tweet 
+      });
     })
   }
 
@@ -32,30 +31,27 @@ export default class ChirpList extends Component {
   render() {
     if(!this.state.chirps) return null; //if no chirps, don't display
 
-    
     /* TODO: produce a list of `<ChirpItems>` to render */
-    console.log(this.state.chirps);
     let chirpKeys = Object.keys(this.state.chirps);
-    console.log(chirpKeys);
-    chirpKeys.map((key) => {
+    let chirpObjs = chirpKeys.map((key) => {
       let chirpObj = this.state.chirps[key];
       chirpObj.id = key;
       return chirpObj;
     })
     
-    console.log(chirpKeys);
 
     // sort option 
 
-
-    let chirpItems = chirpKeys.map((obj) => {
+    
+    let chirpItems = chirpObjs.map((obj) => {
+      
       return(
-        <ChirpItem chirp={obj} currentUser={this.props.currentUser} key={obj.id} />
+        <ChirpItem chirp={obj} currentUser={this.props.currentUser} 
+          key={obj} />
       )
     }); 
-    console.log(chirpItems);
     return (
-      <div className="containerXX">
+      <div className="container">
           {chirpItems}
       </div>);
   }
@@ -66,14 +62,23 @@ class ChirpItem extends Component {
   constructor(props){
     super(props);
     this.state = {
-      likes: {
-        uid: true
-      }
     };
   }
 
   likeChirp = () => {
-    /* TODO: update the chirp when it is liked */
+    let chirpfRef = firebase.database().ref('chirps').child(this.props.chirp.id + '/likes');
+    let updatedLikes = this.props.chirp.likes
+    if (updatedLikes === undefined) {
+      updatedLikes = {};
+    } 
+
+    if ((this.props.chirp.userId in updatedLikes)) {
+      updatedLikes[this.props.chirp.userId] = null;
+    } else {
+      updatedLikes[this.props.chirp.userId] = true;
+    }
+    chirpfRef.set(updatedLikes)
+      .catch((d) => console.log("error ", d));
   }
  
   render() {

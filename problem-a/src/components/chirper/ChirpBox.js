@@ -28,9 +28,6 @@ export default class ChirpBox extends Component {
     newChrip.time = firebase.database.ServerValue.TIMESTAMP;
 
     firebase.database().ref('chirps').push(newChrip);
-    /* TODO: add a new Chirp to the database */
-
-
     this.setState({post:''}); //empty out post for next time
   }
 
